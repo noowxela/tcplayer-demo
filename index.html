@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximun-scale=1, user-scalable=no, shrink-to-fit=no">
+    <title>腾讯云视频点播示例</title>
+
+    <!-- <link rel="stylesheet" href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.4/tcplayer.min.css"> -->
+    <!--有些浏览器环境不支持 Webrtc，播放器会将 Webrtc 流地址自动转换为 HLS 格式地址，因此快直播场景同样需要引入hls.min.x.xx.xm.js。-->
+    <!-- <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.4/libs/TXLivePlayer-1.2.3.min.js"></script> -->
+    <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 HLS 协议的视频，需要在 tcplayer.vx.x.x.min.js 之前引入 hls.min.x.xx.xm.js。-->
+    <!-- <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.4/libs/hls.min.1.1.5.js"></script> -->
+    <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 FLV 格式的视频，需要在 tcplayer.vx.x.x.min.js 之前引入 flv.min.x.x.x.js。-->
+    <!-- <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.4/libs/flv.min.1.6.3.js"></script> -->
+    <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 DASH 视频，需要在 tcplayer.vx.x.x.min.js 之前引入 dash.min.x.x.x.js。-->
+    <!-- <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.4/libs/dash.all.min.4.4.1.js"></script> -->
+    <!--播放器脚本文件-->
+    <!-- <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.4/tcplayer.v4.5.4.min.js"></script> -->
+
+
+    <link
+        href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.2.1/tcplayer.min.css"
+        rel="stylesheet"
+    />
+    <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 HLS 格式的视频，需要在 tcplayer.v4.2.min.js 之前引入 hls.min.0.13.2m.js。-->
+    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.2.1/libs/hls.min.0.13.2m.js"></script>
+    <!--播放器脚本文件-->
+    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.0/tcplayer.v4.5.0.min.js"></script>
+    
+    
+    <style type="text/css" media="screen">
+        body{
+            background-color: #222432;
+            color: #f7f7f7;
+        }
+        /*// 修改播放器按钮的样式*/
+        .tcplayer{
+            margin: 0 auto;
+            border-radius: 8px;
+        }
+        .tcplayer-theme-custom-ui video{
+            border-radius: 8px;
+        }
+        .tcplayer-theme-custom-ui .vjs-play-progress{
+            background-color:  #ff6429;
+        }
+        .tcplayer-theme-custom-ui .vjs-play-control.vjs-playing .vjs-icon-placeholder:before{
+            color: #ff6429;
+        }
+        .tcplayer-theme-custom-ui .vjs-play-control.vjs-ended .vjs-icon-placeholder:before{
+            color: #ff6429;
+        }
+        .tcplayer-theme-custom-ui .vjs-play-control .vjs-icon-placeholder:before{
+            color: #ff6429;
+        }
+        .tcplayer-theme-custom-ui .vjs-volume-panel .vjs-volume-level{
+            background-color: #ff6429;
+        }
+        .tcplayer-theme-custom-ui .vjs-mute-control .vjs-icon-placeholder:before{
+            color: #ff6429;
+        }
+        /*// 修改播放器按钮的样式*/
+
+        #player-container-id{
+            width: 100%;
+            max-width: 100%;
+            height: 0;
+            padding-top: 56.25%;
+        }
+        #wrap{
+            width: 50%;
+            margin: 0 auto;
+            position: relative;
+        }
+        #player-video-before{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            box-sizing: border-box;
+            justify-content: center;
+            z-index: 9;
+            color: #fff;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            background-color: #000;
+            border-radius: 8px;
+        }
+
+        @media only screen and (min-device-pixel-ratio: 2) ,only screen and (-webkit-min-device-pixel-ratio: 2){
+            .tcp-logo-img{
+                width: 50%;
+            }
+        }
+        
+    </style>
+
+</head>
+<body>
+    <body>
+        <!-- 
+            注意事项：
+            * 播放器容器必须为 video 标签
+            * player-container-id 为播放器容器的ID，可自行设置
+            * 播放器区域的尺寸请按需设置，建议通过 css 进行设置，通过css可实现容器自适应等效果
+            * playsinline webkit-playsinline x5-playsinline 这几个属性是为了在标准移动端浏览器不劫持视频播放的情况下实现行内播放，此处仅作示例，请按需使用
+        -->
+        <!-- 设置播放器容器 -->
+        <div id="wrap">
+            <div id="player-video-before"> <img src="./icons8-media-96.114a71ee.png" width="48" height="48"> <span>Add video url to start playing</span> </div>
+            <video id="player-container-id" class="tcplayer-theme-custom-ui" preload="auto" playinline wekitplayinline x5-playinline controlslist="noplaybackrate nodownload"></video>
+        </div>
+        <!-- User input section to enter video source -->
+        <div id="wrap">
+            <label for="videoSource">Enter Video URL: </label>
+            <input type="text" id="videoSource" placeholder="Enter video URL" style="width: 60%; padding: 8px;" />
+            <button id="updateButton" onclick="updateVideoSource()">Play M3U8</button>
+        </div>
+    </body>
+
+
+    <script>
+
+
+        function hls_to_webrtc(url){
+            // console.log("hls_to_webrtc : ",url)
+            // console.log("hls_to_webrtc : ",url.replace(/^https/, "webrtc").replace(/\.m3u8/g, ""))
+            return url.replace(/^https/, "webrtc").replace(/\.m3u8/g, "");
+        }
+        const isWEBrtc_supported = true
+        let video_source = ''; // Initially empty, will be updated by user input
+        let isPlayerInitialized = false; // Flag to check if the player has been initialized
+
+        // let video_source = 'https://pull9.dongguanleyuan.com/live/ecae2614cd4f58b0.m3u8?txSecret=fa04a2a6498dd66249f3eb5f26aaf642&txTime=6773AC15'
+        // let video_source = 'webrtc://pull9.dongguanleyuan.com/live/051597737cbd3f64?txSecret=6fcb379ee7ef1f746aeca01dc1e3b410&txTime=6773A131'
+        // video_source = isWEBrtc_supported ? hls_to_webrtc(video_source):video_source
+        
+        function updateVideoSource() {
+            var userInput = document.getElementById("videoSource").value;
+            var updateButton = document.getElementById("updateButton");
+            var overlay = document.getElementById("player-video-before");
+
+            if (userInput) {
+                video_source = userInput; // Update the video source with user input
+
+                if (isPlayerInitialized) {
+                    // If the player is already initialized, just update the source
+                    player.src(userInput);
+                    updateButton.textContent = "Update Video"; // Change button text
+                    overlay.style.display = "none";
+                } else {
+                    // First time input, initialize the player
+                    initializePlayer();
+                    isPlayerInitialized = true; // Set flag to true after initialization
+                    updateButton.textContent = "Update Video"; // Change button text
+                    overlay.style.display = "none";
+                }
+            } else {
+                alert("Please enter a valid video URL.");
+            }
+        }
+        
+        // document.addEventListener('DOMContentLoaded', () => {
+
+        var player = null
+
+        var appID = "<{$vodSubAppId}>" /*请传入点播账号的 appID（必须）*/
+        var fileID = "<{$fileID}>" /*请传入需要播放的视频 fileID（必须）*/
+        var psign = "<{$psign}>" /*/私有加密播放需填写 psign， psign 即播放器签名*/
+
+        var dataa = {}; //时间变化存入json串
+        var bomTimer; //定义定时器
+
+        var video = document.getElementById("player-container-id")
+        var start_time = 0; // 开始观看视频时长
+        var last_watch = 0; // 最后观看视频时长
+        var current_time = 0; // 当前播放时间
+        var duration = 0; // 当前视频总时长
+        /*禁止快进*/
+        video.ontimeupdate = function () {
+            duration = video.duration;
+            current_time = video.currentTime;
+
+            if(current_time > duration){
+                current_time = duration;
+            }
+
+            if(current_time - start_time > 2 ){
+                if(current_time - last_watch > 2){
+                    video.currentTime = last_watch
+                }else{
+                    start_time = current_time
+                }
+            }else{
+                start_time = current_time
+            }
+
+            if(start_time > last_watch){
+                last_watch = start_time
+            }
+        };
+
+        
+        function initializePlayer() {
+                
+            // 定义播放器容器内容
+            player = TCPlayer('player-container-id', {  // player-container-id 为播放器容器 ID，必须与 html 中一致
+                // appID: appID,                                  // 请传入点播账号的 appID（必须）
+                // fileID: fileID,                                // 请传入需要播放的视频 fileID（必须）
+                // psign: psign,                                  // 私有加密播放需填写 psign， psign 即播放器签名
+                sources: [                                  // 播放器播放地址，格式：[{ src: '//path/to/video.mp4', type: 'video/mp4' }]
+                    {
+                        src: video_source,
+                        // src: '//path/to/video.mp4',
+                        // type: 'video/mp4'
+                    }
+                ],
+                // width: ,                                    // 播放器区域宽度，单位像素，按需设置，可通过 CSS 控制播放器尺寸。
+                // height: ,                                   // 播放器区域高度，单位像素，按需设置，可通过 CSS 控制播放器尺寸。
+                controls: true,                                // 是否显示播放器的控制栏。
+                // poster: "",                                 // 设置封面图片完整地址（如果上传的视频已生成封面图，优先使用生成的封面图，详细请参见 云点播 - 管理视频）。
+                autoplay: true,                               // 是否自动播放。
+                playbackRates: [0.5, 1, 1.25, 1.5, 2],         // 设置变速播放倍率选项，仅 HTML5 播放模式有效。
+                loop: false,                                   // 是否循环播放。
+                muted: false,                                  // 是否静音播放。
+                preload: "meta",                               // 是否需要预加载，有3个属性"auto"，"meta"和"none" ，移动端由于系统限制，设置 auto 无效。
+                // swf: ,                                      // Flash 播放器 swf 文件的 URL。
+                posterImage: true,                               // 是否显示封面
+                bigPlayButton: true,                               // 是否显示居中的播放按钮（浏览器劫持嵌入的播放按钮无法去除）。
+                language: "zh-CN",                               // 设置语言，可选值为 "zh-CN"/"en"
+                languages: {                                     // 设置语言，可选值为 "zh-CN"/"en"
+                    "zh-CN":{
+                        "Withouth anti-leech information." : "可定义错误提示文案，如：没带防盗链检测参数，请重试"
+                    },
+                },
+                controlBar:{
+                    posterImage: true,                               // 是否显示播放、暂停切换按钮。
+                    progressControl: true,                               // 是否显示播放进度条。
+                    volumePanel: true,                               // 是否显示音量控制。
+                    currentTimeDisplay: true,                               // 是否显示视频当前时间。
+                    durationDisplay: true,                               // 是否显示视频时长。
+                    timeDIvider: true,                               // 是否显示时间分割符。
+                    fullScreenToggle: false,                               // 是否显示全屏按钮。
+                    playbackRateMenuButton: false,                               // 是否显示播放速率选择按钮。
+                    QualitySwitcherMenuButton: false,                               // 是否显示清晰度切换菜单。
+                },
+                muted: false,                                  // 设置是否开启数据上报。
+                plugins:{
+                    // VttThumbnail: {                         // 控制缩略图显示，支持的属性如下：
+                    //     vttUrl: ,                           // vtt文件绝对地址，必传
+                    //     basePath: ,                         // 图片路径，非必须，不传时使用 vttUrl 的 path
+                    //     imgUrl: ,                           // 图片绝对地址，非必须
+                    // },
+                    ContinuePlay: {                         // 断点续播 控制续播功能，支持的属性如下：
+                        auto: false,                           // 是否在播放时自动续播
+                        text: "上次播放至",                         // 提示文案
+                        btnText: "继续播放",                           // 按钮文案
+                    },
+                    ProgressMarker: true,                           // 控制进度条显示
+                    DynamicWatermark: {                         // 动态水印控制动态水印显示，支持的属性如下：
+                        speed: 0.2,                           // 水印移动速度，取值范围 0-1, 非必须
+                        text: "水印",                         // 文字水印内容，必传
+                    },
+                    ContextMenu: {                         // 可选值如下：
+                        mirror: false,                           // 控制是否支持镜像显示
+                        statistic: true,                           // 控制是否支持显示数据面板
+                        levelSwitch: {                         // 控制切换清晰度时的文案提示
+                            open: false,                           // 是否开启提示
+                            switchingText: "Start switching",                         // 开始切换清晰度时的提示文案
+                            switchedText: "Switch success",                          // 切换成功时的提示文案
+                            switchErrorText: "Switch fail",                          // 切换失败时的提示文案
+                        },
+                    },
+                    // PlayList: { // 展示列表
+                    //     data: playList,
+                    //     title: '播放列表',
+                    //     loop: false,
+                    // },
+                },
+                // hlsConfig: ,                                 // hls.js 的启动配置，详细内容请参见官方文档 hls.js。
+                // webrtcConfig: {                              // webrtc 的启动配置，后面有详细介绍。
+                //     connectRetryCount: 3,                    // SDK 与服务器重连次数
+                //     connectRetryDelay: 1,                    // SDK 与服务器重连延时
+                //     receiveVideo: true,                      // 是否拉取视频流
+                //     receiveAudio: true,                      // 是否拉取音频流
+                //     showLog: false,                          // 是否在控制台打印日志
+                // },
+            })
+
+            // 播放开始事件
+            player.on("playing", function (event) {
+                // console.info("playing", event);
+                // 进行一次清除定时器操作
+                clearInterval(bomTimer);
+
+                // 设置定时器
+                bomTimer = setInterval(function (event){
+                    // 当前播放位置有变更事件
+                    player.on("timeupdate",function (event){
+                        dataa.progress = event
+                        dataa.current_time = current_time
+                        dataa.current_times = (Math.floor(current_time));
+                        dataa.current_timess = (Math.floor((current_time-(current_time%60))/60)) + ":" + (Math.floor((current_time%60)));
+                        dataa.current_timesss = (Math.floor((current_time-(current_time%60))/60));
+                        dataa.current_timessss = (Math.floor((current_time%60)));
+                    });
+                    // console.log("dataa: ", dataa);
+                    // 判断时间 大于观看时间 调用ajax 小于不调用
+                },5000);
+            });
+
+            // 暂停事件
+            player.on("pause", function (event) {
+                // 清除定时器
+                window.clearInterval(bomTimer);
+            });
+
+            // 视频播放已结束时触发
+            player.on("ended", function (event) {
+                // 清除定时器
+                window.clearInterval(bomTimer);
+            });
+
+            // 事件
+            var events = [
+                "play",             // 已经开始播放，调用 play() 方法或者设置了 autoplay 为 true 且生效时触发，这时 paused 属性为 false。
+                // "playing",             // 因缓冲而暂停或停止后恢复播放时触发，paused 属性为 false 。通常用这个事件来标记视频真正播放，play 事件只是开始播放，画面并没有开始渲染。
+                // "loadstart",           // 开始加载数据时触发。
+                // "durationchange",      // 视频的时长数据发生变化时触发。
+                // "loadedmetadata",      // 已加载视频的 metadata。
+                // "loadeddata",          // 当前帧的数据已加载，但没有足够的数据来播放视频的下一帧时，触发该事件。
+                // "progress",            // 在获取到媒体数据时触发。
+                // "canplay",             // 当播放器能够开始播放视频时触发。
+                // "canplaythrough",      // 当播放器预计能够在不停下来进行缓冲的情况下持续播放指定的视频时触发。
+                // "error",               // 视频播放出现错误时触发。
+                "pause",             // 暂停时触发。
+                // "ratechange",          // 播放速率变更时触发。
+                // "seeked",              // 搜寻指定播放位置结束时触发。
+                // "seeking",             // 搜寻指定播放位置开始时触发。
+                "timeupdate",             // 当前播放位置有变更，可以理解为 currentTime 有变更。
+                // "volumechange",        // 设置音量或者 muted 属性值变更时触发。
+                // "waiting",             // 播放停止，下一帧内容不可用时触发。
+                "ended",             // 视频播放已结束时触发。此时 currentTime 值等于媒体资源最大值。
+                // "resolutionswitching", // 清晰度切换进行中。
+                // "resolutionswitched",  // 清晰度切换完毕。
+                // "fullscreenchange",    // 全屏状态切换时触发。
+                // "webrtcevent",         // 播放 webrtc 时的事件集合。
+                // "webrtcstats",         // 播放 webrtc 时的统计数据。
+                // "suspend",             //
+                // "abort",               //
+                // "emptied",             //
+                // "stalled",             //
+                // "resize",              //
+            ];
+            // 事件
+
+            // 事件回调
+                // player.on("waiting", function (event) {
+                //     window.clearInterval(bomTimer);
+                // });
+                // player.on("ended", function (event) {
+                //     window.clearInterval(bomTimer);
+                // });
+                // player.on("error", function (event) {
+                //     window.clearInterval(bomTimer);
+                // });
+                // events.forEach(function(val, i){
+                //    player.on(val, function (event) {
+                //    });
+                // });
+            // 事件回调
+
+            /*修改开始按钮的样式*/
+            const Button = TCPlayer.getComponent("Button");
+            const BigPlayButton = TCPlayer.getComponent("BigPlayButton");
+            BigPlayButton.prototype.createEl = function () {
+                var el = Button.prototype.createEl.call(this);
+                let _html = '<button><svg t="1644397862160" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3095" width="64" height="64"><path d="M298.666667 247.04V682.666667a42.666667 42.666667 0 0 1-85.333334 0V170.666667a42.666667 42.666667 0 0 1 65.024-36.352l554.666667 341.333333a42.666667 42.666667 0 0 1 0 72.704l-554.666667 341.333333a42.666667 42.666667 0 0 1-44.714666-72.704L729.258667 512 298.666667 247.04z" p-id="3096" fill="#ffffff"></path></svg></button>'
+
+                el.appendChild(TCPlayer.dom.createEl('div'),{
+                    className: 'vjs-button-icon',
+                    innerHtml: _html,
+                })
+                return el;
+            };
+
+            var controlBar = TCPlayer.getComponent("controlBar");
+            controlBar.prototype.options_ = {
+                children: ['playToggle', 'volumePanel', 'currentTimeDisplay', 'timeDivider', 'durationDisplay', 'progressCOntrol', 'liveDisplay', 'remainingTimeDisplay', 'customControlSpacer', 'playbackRateMenuBUtton', 'chaptersButton', 'descriptionsButton', 'fullscreenToggle']
+            }
+            /*修改开始按钮的样式*/
+        }
+
+        // Initial player setup (if needed)
+        if (video_source) {
+            initializePlayer(); // Initialize with a default or pre-set video source
+        }
+        // });
+    </script>
+</body>
+</html>
